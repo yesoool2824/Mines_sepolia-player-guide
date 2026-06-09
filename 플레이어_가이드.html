@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mines_2023100592 플레이어 가이드</title>
+<style>
+  body { font-family: 'Malgun Gothic', sans-serif; max-width: 780px; margin: 40px auto; padding: 0 24px; color: #1a1a1a; line-height: 1.7; }
+  h1 { font-size: 1.6rem; border-bottom: 3px solid #2563eb; padding-bottom: 10px; color: #1e3a8a; }
+  h2 { font-size: 1.15rem; color: #1d4ed8; margin-top: 32px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+  h3 { font-size: 1rem; color: #374151; margin-top: 20px; }
+  .step { background: #f0f4ff; border-radius: 8px; padding: 14px 18px; margin: 10px 0; }
+  .step b { color: #1d4ed8; }
+  .warn { background: #fff7ed; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 0.93rem; }
+  .tag { display: inline-block; background: #2563eb; color: white; font-size: 0.78rem; padding: 2px 8px; border-radius: 12px; margin-right: 4px; }
+  .tag.green { background: #16a34a; }
+  .tag.orange { background: #ea580c; }
+  code { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.92rem; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; }
+  th { background: #1d4ed8; color: white; padding: 8px 12px; text-align: left; }
+  td { padding: 7px 12px; border-bottom: 1px solid #e5e7eb; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+  @media print { body { margin: 20px; } }
+</style>
+</head>
+<body>
+
+<h1>Mines_2023100592 &nbsp;플레이어 참여 가이드</h1>
+<p style="color:#6b7280; font-size:0.9rem;">온체인 지뢰찾기 베팅 게임 &nbsp;|&nbsp; Sepolia 테스트넷</p>
+
+<!-- 준비물 -->
+<h2>1. 준비물</h2>
+<div class="step"><b>① MetaMask</b> 브라우저 확장 설치 &amp; 지갑 생성</div>
+<div class="step"><b>② Sepolia 네트워크</b> 추가 &nbsp;→&nbsp; MetaMask &gt; 네트워크 드롭다운 &gt; "Sepolia 테스트 네트워크" 선택</div>
+<div class="step"><b>③ Sepolia ETH 받기</b> &nbsp;→&nbsp; <a href="https://sepoliafaucet.com" target="_blank">sepoliafaucet.com</a> 또는 <a href="https://faucet.sepolia.dev" target="_blank">faucet.sepolia.dev</a> 에서 무료 수령</div>
+<div class="step"><b>④ 컨트랙트 주소</b> &nbsp;→&nbsp; 하우스(운영자)에게 받기</div>
+
+<!-- 컨트랙트 연결 -->
+<h2>2. Remix에서 컨트랙트 연결</h2>
+<div class="step"><b>①</b> <a href="https://remix.ethereum.org" target="_blank">remix.ethereum.org</a> 접속</div>
+<div class="step"><b>②</b> 왼쪽 플러그인 탭 &gt; <b>Deploy &amp; Run Transactions</b> 클릭</div>
+<div class="step"><b>③</b> Environment &nbsp;→&nbsp; <b>Injected Provider - MetaMask</b> 선택 &nbsp;(MetaMask 팝업에서 연결 승인)</div>
+<div class="step"><b>④</b> <code>Mines_2023100592.sol</code> 파일을 Remix에 올리고 컴파일 (Ctrl+S)</div>
+<div class="step"><b>⑤</b> Deploy 탭 하단 <b>"At Address"</b> 칸에 하우스에게 받은 주소 입력 → <b>At Address</b> 버튼 클릭</div>
+<div class="warn">⚠️ "At Address" 버튼이 눌려야 기존 배포된 컨트랙트에 연결됨. 절대 Deploy 버튼 누르지 말 것.</div>
+
+<hr class="divider">
+
+<!-- SOLO -->
+<h2>3. Solo 모드 플레이</h2>
+<p style="font-size:0.92rem; color:#374151;">혼자서 하우스를 상대로 베팅하는 1인 게임.</p>
+
+<h3>① 게임 시작 &amp; 베팅</h3>
+<div class="step">
+  <span class="tag orange">write</span> <code>solo_requestGame</code> 호출<br>
+  &nbsp;&nbsp;• <code>_boardSize</code> : 전체 칸 수 (하우스에게 확인)<br>
+  &nbsp;&nbsp;• <code>_mineCount</code> : 지뢰 수 (하우스에게 확인)<br>
+  &nbsp;&nbsp;• VALUE 칸 : 베팅할 ETH 금액 입력 후 호출<br>
+  &nbsp;&nbsp;→ 반환된 <b>게임 ID</b> 메모 (이벤트 탭에서도 확인 가능)
+</div>
+<div class="warn">⚠️ 하우스가 <code>commitBoard</code>를 완료해야 게임이 시작됨. 잠시 기다릴 것.</div>
+
+<h3>② 칸 열기</h3>
+<div class="step">
+  <span class="tag orange">write</span> <code>solo_openTile(게임ID, 칸번호)</code> 호출<br>
+  &nbsp;&nbsp;• 칸 번호는 0부터 시작 (0 ~ boardSize-1)<br>
+  &nbsp;&nbsp;→ 하우스가 <code>revealTile</code>로 결과 공개 (이벤트 <code>TileRevealed</code> 확인)
+</div>
+
+<h3>③-A 지뢰 → 게임 오버</h3>
+<div class="step">
+  이벤트에 <code>SoloBustedEvent</code> 발생 → 베팅금 몰수. 게임 종료.
+</div>
+
+<h3>③-B 안전 → 계속 or 출금</h3>
+<table>
+  <tr><th>선택</th><th>방법</th><th>결과</th></tr>
+  <tr><td>계속 플레이</td><td><code>solo_openTile</code> 재호출</td><td>배당 배율 상승</td></tr>
+  <tr><td>중간 출금</td><td><span class="tag orange">write</span> <code>solo_cashout(게임ID)</code></td><td>현재 배율로 ETH 수령</td></tr>
+</table>
+<div class="step">
+  현재 예상 배당 확인: <span class="tag green">read</span> <code>currentMultiplier(게임ID)</code><br>
+  &nbsp;&nbsp;→ 반환값 ÷ 1,000,000 = 배율 &nbsp;(예: 1,100,000 → 1.1배)
+</div>
+
+<hr class="divider">
+
+<!-- MULTI -->
+<h2>4. Multi 모드 플레이</h2>
+<p style="font-size:0.92rem; color:#374151;">플레이어들이 ETH를 투표해 칸을 결정하는 다인 게임. 지뢰 칸에 투표한 사람만 돈을 잃음.</p>
+
+<h3>① 게임 참여</h3>
+<div class="step">
+  하우스에게 <b>게임 ID</b> 받기<br>
+  <span class="tag orange">write</span> <code>multi_joinGame(게임ID)</code> 호출 (ETH 불필요)
+</div>
+
+<h3>② 투표로 칸 고르기</h3>
+<div class="step">
+  하우스가 투표 시작하면 (<code>VotingStarted</code> 이벤트):<br>
+  <span class="tag orange">write</span> <code>multi_voteOnTile(게임ID, 칸번호)</code> + VALUE에 베팅 ETH 입력<br>
+  &nbsp;&nbsp;• 한 라운드에 하나의 칸에만 투표 가능<br>
+  &nbsp;&nbsp;• 투표 변경: <code>multi_withdrawVote</code>로 환불 후 재투표<br>
+  &nbsp;&nbsp;→ 하우스가 <code>multi_closeVoting</code> → 가장 ETH 많이 몰린 칸 공개
+</div>
+
+<h3>③ 결과</h3>
+<table>
+  <tr><th>결과</th><th>내 투표 칸</th><th>처리</th></tr>
+  <tr><td>안전 칸</td><td>안전 칸에 투표</td><td>safeBet으로 누적 (다음 라운드 계속)</td></tr>
+  <tr><td>안전 칸</td><td>다른 칸에 투표</td><td>ETH 즉시 환불</td></tr>
+  <tr><td>지뢰 칸</td><td>지뢰 칸에 투표</td><td>베팅금 몰수 (하우스 수입)</td></tr>
+  <tr><td>지뢰 칸</td><td>다른 칸에 투표</td><td>ETH 즉시 환불</td></tr>
+</table>
+
+<h3>④ 중간 출금 (선택)</h3>
+<div class="step">
+  <span class="tag orange">write</span> <code>multi_cashout(게임ID)</code><br>
+  &nbsp;&nbsp;• 현재 누적 safeBet × 배율로 ETH 수령<br>
+  &nbsp;&nbsp;• 단, 보류 중인 투표 먼저 <code>multi_withdrawVote</code>로 회수할 것
+</div>
+
+<hr class="divider">
+
+<!-- 공통 -->
+<h2>5. 공통 — 타임아웃 보호</h2>
+<div class="step">
+  하우스가 30블록(약 6분) 이상 응답 없으면:<br>
+  <span class="tag orange">write</span> <code>claimTimeout(게임ID)</code> → 베팅금 자동 환불
+</div>
+
+<!-- 조회 -->
+<h2>6. 상태 조회</h2>
+<table>
+  <tr><th>함수</th><th>설명</th></tr>
+  <tr><td><code>getGame(게임ID)</code></td><td>게임 상태, 보드 크기, 지뢰 수, pendingTile 등 확인</td></tr>
+  <tr><td><code>getPlayerState(게임ID, 내주소)</code></td><td>나의 safeBet, 투표 칸/금액 확인</td></tr>
+  <tr><td><code>getTileVotes(게임ID, 칸번호)</code></td><td>특정 칸에 몰린 총 ETH 확인</td></tr>
+  <tr><td><code>getPlayers(게임ID)</code></td><td>참여자 주소 목록 확인</td></tr>
+  <tr><td><code>currentMultiplier(게임ID)</code></td><td>현재 배당 배율 × 1,000,000 반환</td></tr>
+</table>
+
+<p style="color:#9ca3af; font-size:0.82rem; text-align:center; margin-top:40px;">
+  Mines_2023100592 &nbsp;|&nbsp; 2023100592 이예솔 &nbsp;|&nbsp; Sepolia Testnet
+</p>
+
+</body>
+</html>
